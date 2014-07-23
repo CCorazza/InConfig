@@ -6,6 +6,10 @@ apt-get install vim zsh git tig curl gcc python-pip python-dev libmysqlclient-de
 apt-get install openjdk-7-jre-headless -y
 pip install -r pip.install
 
+# Install ruby and sass for elasticsearch
+apt-get install ruby
+gem install sass
+
 # Install elasticsearch
 sh elasticsearch_easyinstall.sh
 
@@ -22,5 +26,4 @@ apt-get update
 apt-get upgrade
 
 zsh
-cd ~
-source .zshrc
+source ~/.zshrc
