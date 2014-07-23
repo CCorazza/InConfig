@@ -1,0 +1,164 @@
+#config zsh ccorazza
+
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/usr/texbin:~/.brew/bin
+HISTFILE=~/.zshrc_history
+SAVEHIST=4200
+HISTSIZE=4200
+PROMPT=$'%{\e[38;5;239m%}%m %{\e[38;5;220m%}%~ %{\e[38;5;39m%}[%t ]%{\e[0m%} \|> '
+
+export TERM="xterm-256color"
+
+setopt inc_append_history
+setopt share_history
+
+if [[ -f ~/.myzshrc ]]; then
+  source ~/.myzshrc
+fi
+
+USER=`/usr/bin/whoami`
+export USER
+GROUP=`/usr/bin/id -gn $user`
+export GROUP
+MAIL="$USER@student.42.fr"
+export MAIL
+
+
+alias l="ls -bFGho --color=auto"
+alias ll="ls -abFGho --color=auto"
+alias cp="cp -v"
+
+
+alias ne="emacs"
+alias v="vim"
+alias gw="gcc -Wall -Wextra -Werror"
+alias j="jobs"
+
+alias manage="python manage.py"
+
+alias xt4="xfce4-terminal"
+alias settings="xfce4-settings-manager"
+alias lock="xflock4"
+alias logout="xfce4-session-logout"
+alias open="xdg-open"
+
+alias cleanswp="find ./ -name '*.sw[mnop]' -print -delete"
+alias zrc="vim /home/curcolio/.zshrc"
+alias src="source /home/curcolio/.zshrc"
+
+## -------- Directories Aliases ---------
+
+alias mkdir="mkdir -pv"
+
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias .....="cd ../../../.."
+alias ......="cd ../../../../.."
+
+alias usb="cd /media/curcolio/"
+
+
+## -------- 42 Aliases ---------
+
+alias N="norminette"
+alias auteur="echo $USER > auteur && git add auteur"
+
+
+## -------- Functions ---------
+
+
+function look() #Finding someone on one of 42's iMacs...
+{
+	for i in $*
+	do
+	printf "\n# [LOOKING FOR : $i]\n|\n" && ldapsearch -Q uid="$i" | grep -e "^mobile-phone" | sed 's/mobile-phone:/|/' && printf "| $i@student.42.fr\n" && wget -qO - http://dashboard.42.fr/crawler/pull/$i | grep -o 'last_host": [^ .]\+' | sed 's/last_host": "/| /g' && printf "|\n# [END] \n\n" ;
+	done
+}
+
+function colors()
+{
+for COLOR in $(seq 0 255)
+do
+    for STYLE in "38;5"
+    do
+        TAG="\033[${STYLE};${COLOR}m"
+        STR="${STYLE};${COLOR}"
+        echo -ne "${TAG}${STR}${NONE}  "
+    done
+    echo
+done
+}
+
+function mkgo() { mkdir $1 ; cd $1 }
+
+## -------- PHP Creation Functions ---------
+
+function pcreate()
+{
+if [[ $# -eq 1 && ! -f $1 ]]
+	then
+		printf "#!/usr/bin/php\n<?PHP\n\n\n?>" > $1
+	chmod 755 $1
+	vim $1
+fi
+}
+
+function classcreate()
+{
+if [[ $# -eq 1 && ! -f $1 ]]
+	then
+	{
+		printf "<?PHP\n\n\n?>" > $1.class.php
+		printf "<- Doc ----------------------------------------------------------------------\n\n\n---------------------------------------------------------------------- Doc ->" > ./doc/$1.doc.php
+	}
+	vim $1.class.php
+fi
+}
+
+## -------- Project Starting Functions ---------
+
+function     gitlaunch()
+{
+    echo "\e[32m"
+    git init
+    echo "\e[0m"
+    echo "*.[oa]\n*.pdf\n*~\n*.swp\n" > .git/info/exclude
+    git config --global user.name 'Curcolio'
+    git config --global user.email ccorazza@student.42.fr
+    #curl -u 'Curcolio'    https://api.github.com/user/repos -d "{    \"name\":\"$1\",
+    #                    \"private\": false,
+    #                    \"has_issues\": true,
+    #                    \"has_downloads\": true,
+    #                    \"has_wiki\": false}"
+    #                    > ../logs/$1curl.repo_config.log
+    echo "\e[34m"
+    git remote add origin https://github.com/Curcolio/$1.git
+    git add *
+    git commit -qm "Initializing commit -- These files are default files generated automatically"
+    git status
+    echo "\e[0m"
+    git push origin master
+    echo "\n\n ### --- \e[32mLOG\e[0m --- ###\n\n"
+    git log --shortstat
+}
+
+function    djlaunch()
+{
+    echo "\n You're starting the new \e[38;5;204m$1\e[0m project..."
+    python -c "import django; print('Django Version :', django.get_version())"
+    django-admin.py startproject $1
+    mkdir logs
+    cd $1
+    #gitlaunch $1
+    #echo     "\n ## ------ Git Repositery successfully created ------ ##\n\n
+    #       --\e[33m YOU NOW NEED TO EDIT THE db.conf FILE \e[0m--\n\n"
+    sleep 3
+    xt4 --tab -T "Configure DB.CONF" --working-directory=$PWD
+   # vim -p db.conf
+    manage createsuperuser
+    echo "\n\n"
+    manage sync_db
+    xt4 --tab -T "Apache SERVER" --working-directory=$PWD
+    manage runserver 8080
+}
+
