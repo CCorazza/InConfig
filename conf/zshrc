@@ -1,12 +1,11 @@
 #config zsh ccorazza
 
-PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/usr/texbin:~/.brew/bin
+PATH=$HOME/.brew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/usr/texbin
+#PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/usr/texbin:~/.brew/bin
 HISTFILE=~/.zshrc_history
 SAVEHIST=4200
 HISTSIZE=4200
-PROMPT=$'%{\e[38;5;239m%}%m %{\e[38;5;220m%}%~ %{\e[38;5;39m%}[%t ]%{\e[0m%} \|> '
-
-export TERM="xterm-256color"
+PROMPT=$'%{\e[38;5;239m%}%m %{\e[0;33m%}%~ %{\e[1;34m%}[%t ]%{\e[0m%} \|> '
 
 setopt inc_append_history
 setopt share_history
@@ -22,52 +21,47 @@ export GROUP
 MAIL="$USER@student.42.fr"
 export MAIL
 
+# -------- 42 Aliases ---------
+alias auteur="echo $USER > auteur && git add auteur"
+alias N="norminette"
 
-alias l="ls -bFGho --color=auto"
-alias ll="ls -abFGho --color=auto"
-alias cp="cp -v"
+# -------- Directories Aliases ---------
 
-
-alias ne="emacs"
-alias v="vim"
-alias gw="gcc -Wall -Wextra -Werror"
-alias j="jobs"
-
-alias manage="python manage.py"
-
-alias xt4="xfce4-terminal"
-alias settings="xfce4-settings-manager"
-alias lock="xflock4"
-alias logout="xfce4-session-logout"
-alias open="xdg-open"
-
-alias cleanswp="find ./ -name '*.sw[mnop]' -print -delete"
-alias zrc="vim /home/curcolio/.zshrc"
-alias src="source /home/curcolio/.zshrc"
-
-## -------- Directories Aliases ---------
+alias l="ls -bFGho"
+alias ll="ls -abFGho"
 
 alias mkdir="mkdir -pv"
+alias usb="cd /Volumes"
 
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias ......="cd ../../../../.."
+alias ~="cd ~"
 
-alias usb="cd /media/curcolio/"
+# -------- Workflow  Aliases ---------
+alias clean='cd ~/Library/Caches/; find . -name Homebrew -prune -o  -delete -print 2> /dev/null; echo "[OK]"; cd - &> /dev/null;'
+alias cleanswp="find ./ -name '*.sw[mnop]' -print -delete"
 
+alias ne="emacs"
+alias v="vim"
+alias j="jobs"
 
-## -------- 42 Aliases ---------
+alias src="source ~/.zshrc"
+alias zrc="vim ~/.zshrc"
+alias vrc="vim ~/.myvimrc"
 
-alias N="norminette"
-alias auteur="echo $USER > auteur && git add auteur"
+# -------- Functions ---------
+## Shell
 
+function mkgo()
+{
+	mkdir "$@"
+	cd "$@"
+}
 
-## -------- Functions ---------
-
-
-function look() #Finding someone on one of 42's iMacs...
+function look()
 {
 	for i in $*
 	do
@@ -89,9 +83,7 @@ do
 done
 }
 
-function mkgo() { mkdir $1 ; cd $1 }
-
-## -------- PHP Creation Functions ---------
+## PHP
 
 function pcreate()
 {
@@ -115,16 +107,20 @@ if [[ $# -eq 1 && ! -f $1 ]]
 fi
 }
 
-## -------- Project Starting Functions ---------
+## Git
 
+# The gitlaunch() function needs you to have created your repository on github.com beforehand. Be smart, lad, read the code.
 function     gitlaunch()
 {
-    echo "\e[32m"
+	echo "\e[35m[?] WARNING \e[0m> The gitlaunch() function needs you to have created your repository on github.com beforehand. Be smart, lad, read the code."
+	mkdir "$@"
+	cd "$@"
+	echo "\e[32m"
     git init
     echo "\e[0m"
     echo "*.[oa]\n*.pdf\n*~\n*.swp\n" > .git/info/exclude
-    git config --global user.name 'Curcolio'
-    git config --global user.email ccorazza@student.42.fr
+    git config --global user.name $USER
+    git config --global user.email $MAIL
     #curl -u 'Curcolio'    https://api.github.com/user/repos -d "{    \"name\":\"$1\",
     #                    \"private\": false,
     #                    \"has_issues\": true,
@@ -132,8 +128,8 @@ function     gitlaunch()
     #                    \"has_wiki\": false}"
     #                    > ../logs/$1curl.repo_config.log
     echo "\e[34m"
-    git remote add origin https://github.com/Curcolio/$1.git
-    git add *
+    git remote add origin https://github.com/$USER/$1.git
+    auteur
     git commit -qm "Initializing commit -- These files are default files generated automatically"
     git status
     echo "\e[0m"
@@ -141,24 +137,3 @@ function     gitlaunch()
     echo "\n\n ### --- \e[32mLOG\e[0m --- ###\n\n"
     git log --shortstat
 }
-
-function    djlaunch()
-{
-    echo "\n You're starting the new \e[38;5;204m$1\e[0m project..."
-    python -c "import django; print('Django Version :', django.get_version())"
-    django-admin.py startproject $1
-    mkdir logs
-    cd $1
-    #gitlaunch $1
-    #echo     "\n ## ------ Git Repositery successfully created ------ ##\n\n
-    #       --\e[33m YOU NOW NEED TO EDIT THE db.conf FILE \e[0m--\n\n"
-    sleep 3
-    xt4 --tab -T "Configure DB.CONF" --working-directory=$PWD
-   # vim -p db.conf
-    manage createsuperuser
-    echo "\n\n"
-    manage sync_db
-    xt4 --tab -T "Apache SERVER" --working-directory=$PWD
-    manage runserver 8080
-}
-
